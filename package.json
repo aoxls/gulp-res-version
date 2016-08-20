@@ -1,0 +1,36 @@
+{
+  "name": "gulp-res-version",
+  "version": "0.1.0",
+  "description": "Append version code to the resource references in html and css files",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aoxls/gulp-res-version.git"
+  },
+  "keywords": [
+    "gulpplugin",
+    "optimize",
+    "version",
+    "cache",
+    "expire",
+    "static",
+    "asset",
+    "assets",
+    "rev",
+    "revision"
+  ],
+  "author": "lixiao",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/aoxls/gulp-res-version/issues"
+  },
+  "homepage": "https://github.com/aoxls/gulp-res-version#readme",
+  "dependencies": {
+    "gulp-util": "^3.0.7",
+    "htmlparser2": "^3.9.1",
+    "through2": "^2.0.1"
+  }
+}
