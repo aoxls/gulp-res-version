@@ -6,6 +6,8 @@ const versioner = require('./versioner');
 const PLUGIN_NAME = 'gulp-res-version';
 
 function resVersion(opts) {
+    let map = {};
+
     // 创建一个让每个文件通过的 stream 通道
     return through.obj((file, enc, cb) => {
         if (file.isNull()) {
@@ -16,7 +18,7 @@ function resVersion(opts) {
             return cb(new gutil.PluginError(PLUGIN_NAME, 'Streaming not supported'));
         }
 
-        versioner(file, opts);
+        versioner(file, map, opts);
 
         cb(null, file);
     });

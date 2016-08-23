@@ -10,8 +10,9 @@ const htmlparser = require('htmlparser2');
 const PLUGIN_NAME = 'gulp-res-version';
 
 class Versioner {
-    constructor(file, options) {
+    constructor(file, map, options) {
         this.file = file;
+        this.map = map;
         this.content = file.contents.toString();
         this.path = file.path;
         this.base = file.base;
@@ -20,7 +21,7 @@ class Versioner {
 
         this.opts = Object.assign({
             rootdir: file.cwd, // 以"/"开头的引用所对应的目录
-            ignore: [],
+            ignore: [], // 忽略的正则数组
             qskey: 'v' // 添加的查询字符串键名
         }, options);
 
@@ -76,7 +77,7 @@ class Versioner {
      * 解析css文件，提取引用
      */
     parseCss() {
-        let reg = /url\(['"]?(?!data)([^\)'"]*)['"]?\)/ig,
+        let reg = /url\(\s*['"]?([^'";,\s}]*)['"]?\s*\)/ig,
             references = [], m;
 
         while (m = reg.exec(this.content)) {
@@ -99,9 +100,9 @@ class Versioner {
         }
         // 用户定义的忽略正则
         let result = false;
-        this.opts.ignore.forEach((reg) => {
+        for (let reg of this.opts.ignore) {
             result = reg.test(refurl);
-        });
+        }
         return result;
     }
 
@@ -110,20 +111,27 @@ class Versioner {
      * @param references
      */
     replaceReferences(references) {
-        references.forEach((refurl) => {
+        for (let refurl of references) {
             let refpath = this.getRefPath(refurl),
                 refurlObj = url.parse(refurl, true),
                 reg = new RegExp(this.escapeRegExp(refurl), 'ig'),
                 refbuf, refhash, targeturl;
 
-            try {
-                refbuf = fs.readFileSync(url.parse(refpath).pathname);
+            if (this.map[refpath]) {
+                refhash = this.map[refpath];
             }
-            catch(e) {
-                return gutil.log(gutil.colors.yellow(PLUGIN_NAME), 'Load file failed: "' + refurl + '" in "' + this.path + '"');
+            else {
+                try {
+                    refbuf = fs.readFileSync(refpath);
+                }
+                catch(e) {
+                    return gutil.log(gutil.colors.yellow(PLUGIN_NAME), 'Load file failed: "' + refurl + '" in "' + this.path + '"');
+                }
+                refhash = this.getFileHash(refbuf);
+                // 缓存文件的hash值
+                this.map[refpath] = refhash;
             }
 
-            refhash = this.getFileHash(refbuf);
             // 将hash值添加到querystring中
             refurlObj.query[this.opts.qskey] = refhash;
             refurlObj.search = '';
@@ -131,7 +139,7 @@ class Versioner {
 
             // 替换
             this.content = this.content.replace(reg, targeturl);
-        });
+        }
     }
 
     /**
@@ -149,17 +157,20 @@ class Versioner {
      * @returns {String}
      */
     getRefPath(refurl) {
+        let result = '';
+
         if (!/^\.|^\//ig.test(refurl)) {
             refurl = './' + refurl;
         }
         if (refurl.indexOf('./') === 0 || refurl.indexOf('../') === 0) {
-            return path.resolve(path.dirname(this.path), refurl);
+            result = path.resolve(path.dirname(this.path), refurl);
         }
         if (refurl.indexOf('/') === 0) {
             refurl = refurl.substr(1);
-            return path.resolve(this.cwd, this.opts.rootdir, refurl);
+            result = path.resolve(this.cwd, this.opts.rootdir, refurl);
         }
-        return null;
+
+        return url.parse(result).pathname;
     };
 
     /**
@@ -172,4 +183,4 @@ class Versioner {
     }
 }
 
-module.exports = (file, options) => new Versioner(file, options);
+module.exports = (file, map, options) => new Versioner(file, map, options);
