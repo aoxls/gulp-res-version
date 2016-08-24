@@ -55,11 +55,11 @@ class Versioner {
             onopentag: (tag, attrs) => {
                 // 提取引用路径
                 let refurl;
-                if (tag === 'script' || tag === 'img') {
-                    refurl = attrs.src;
+                if ((tag === 'script' || tag === 'img') && attrs.src) {
+                    refurl = attrs.src.trim();
                 }
                 if (tag === 'link' && attrs.href && attrs.href.indexOf('.css') > -1) {
-                    refurl = attrs.href;
+                    refurl = attrs.href.trim();
                 }
                 // 跳过不需处理的引用
                 if (!this.isIgnored(refurl)) {
@@ -77,11 +77,12 @@ class Versioner {
      * 解析css文件，提取引用
      */
     parseCss() {
-        let reg = /url\(\s*['"]?([^'";,\s}]*)['"]?\s*\)/ig,
+        let reg = /url\(\s*['"]?([^'":;,\s}]*)['"]?\s*\)/ig,
+            content = this.content.replace(/\/\*[\s\S]*?\*\//ig, ''), // 去除注释
             references = [], m;
 
-        while (m = reg.exec(this.content)) {
-            let refurl = m[1];
+        while (m = reg.exec(content)) {
+            let refurl = m[1].trim();
             if (!this.isIgnored(refurl)) {
                 references.push(refurl);
             }
@@ -95,7 +96,7 @@ class Versioner {
      * @param refurl
      */
     isIgnored(refurl) {
-        if (!refurl || refurl === '' || /^http|^data:/ig.test(refurl)) {
+        if (!refurl || refurl === '' || /^http|^data:|about:blank/ig.test(refurl)) {
             return true;
         }
         // 用户定义的忽略正则

@@ -1,6 +1,6 @@
 # gulp-res-version
 
-Append hash version code to the resource references in html and css files.
+Append file hash as a querystring to the resource references in html and css files.
 
 ## Installation
 

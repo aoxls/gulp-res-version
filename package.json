@@ -1,7 +1,7 @@
 {
   "name": "gulp-res-version",
-  "version": "0.1.0",
-  "description": "Append version code to the resource references in html and css files",
+  "version": "0.2.0",
+  "description": "Append file hash as a querystring to the resource references in html and css files",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -12,15 +12,14 @@
   },
   "keywords": [
     "gulpplugin",
-    "optimize",
+    "rev",
+    "revision",
     "version",
     "cache",
     "expire",
     "static",
     "asset",
-    "assets",
-    "rev",
-    "revision"
+    "optimize"
   ],
   "author": "lixiao",
   "license": "MIT",
